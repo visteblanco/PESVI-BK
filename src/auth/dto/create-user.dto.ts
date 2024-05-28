@@ -12,6 +12,11 @@ export class CreateUserDto {
 
     @MinLength(6)
     password: string;
-
-
+    
+    @IsString()
+    roles: string;
+    
+    setEmail(email: string) {
+        this.email = email.toUpperCase();
+    }
 }
