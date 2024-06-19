@@ -1,4 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import mongoose from 'mongoose';
+import { Vehicle } from './vehicle.entity';
 
 @Schema()
 export class User {
@@ -19,6 +21,15 @@ export class User {
 
     @Prop({ type: [String], default: ['user'] })
     roles: string[];
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Company' })
+    company: mongoose.Schema.Types.ObjectId;
+
+    @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Vehicle' })
+    vehicles: Vehicle[];
+
+    @Prop({ type: String })
+    activeDevice: string;
 
 }
 

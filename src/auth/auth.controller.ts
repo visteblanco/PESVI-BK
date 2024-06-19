@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { CreateUserDto, LoginDto, UpdateAuthDto } from './dto';
 import { AuthGuard } from './guards/auth.guard';
 import { LoginResponse } from './interfaces/login-response';
-import { User } from './entities/user.entity';
+import { User } from '../entities/user.entity';
 
 
 @Controller('auth')

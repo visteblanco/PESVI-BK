@@ -10,7 +10,6 @@
         "runtimeArgs": ["--nolazy", "-r", "ts-node/register"],
         "cwd": "${workspaceFolder}",
         "sourceMaps": true,
-        "protocol": "inspector",
         "restart": true,
         "console": "integratedTerminal",
         "internalConsoleOptions": "neverOpen"

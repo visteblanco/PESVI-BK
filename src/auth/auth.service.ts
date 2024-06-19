@@ -7,7 +7,7 @@ import * as bcryptjs from 'bcryptjs';
 
 import { CreateUserDto, UpdateAuthDto, LoginDto } from './dto';
 
-import { User } from './entities/user.entity';
+import { User } from '../entities/user.entity';
 
 import { JwtPayload } from './interfaces/jwt-payload';
 import { LoginResponse } from './interfaces/login-response';
@@ -23,9 +23,7 @@ export class AuthService {
   ) {}
 
   async register( registerDto: CreateUserDto ): Promise<LoginResponse> {
-
     const user = await this.create( registerDto );
-
     return {
       user: user,
       token: this.getJwtToken({ id: user._id })
@@ -33,21 +31,17 @@ export class AuthService {
   }
 
   async create(createUserDto: CreateUserDto): Promise<User> {
-    
     try {
-      
       const { password, ...userData } = createUserDto;
-           
       const newUser = new this.userModel({
         password: bcryptjs.hashSync( password, 10 ),
         ...userData
       });
-
+      // Verificar si el email está presente antes de convertirlo a mayúsculas
+      if (newUser.email) newUser.email = newUser.email.toUpperCase();
        await newUser.save();
        const { password:_, ...user } = newUser.toJSON();
-       
        return user;
-      
     } catch (error) {
       if( error.code === 11000 ) {
         throw new BadRequestException(`${ createUserDto.email } already exists!`)
@@ -114,10 +108,7 @@ export class AuthService {
   }
   
   async updateUserID(updateAuthDto: UpdateAuthDto): Promise<User> {
-    
     try {
-      
-      
       const us = await this.findUserById( updateAuthDto._id,true );
       if ( !us ) throw new UnauthorizedException('User does not exists');
       if ( !us.isActive ) throw new UnauthorizedException('User is not active');
@@ -144,7 +135,6 @@ export class AuthService {
       }
       throw new InternalServerErrorException('Something terribe happen!!!');
     }
-
   }
 
 
