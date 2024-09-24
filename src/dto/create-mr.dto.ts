@@ -1,8 +1,5 @@
-import { IsArray, IsDate, IsEmail, IsMongoId, IsOptional, IsString, MinLength } from 'class-validator';
-import { Vehicle } from '../entities/vehicle.entity';
+import { IsDate, IsMongoId, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
-
-
 
 export class CreateMrDto {
 

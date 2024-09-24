@@ -9,13 +9,9 @@ import { SettingsModule } from './settings/settings.module';
 @Module({
   imports: [
     ConfigModule.forRoot(),
-
     MongooseModule.forRoot( process.env.MONGO_URI,{dbName: process.env.MONGO_DB_NAME}  ),
-
     SettingsModule,
     AuthModule,
-
-
   ],
   controllers: [],
   providers: [],

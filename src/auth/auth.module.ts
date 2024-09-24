@@ -10,6 +10,7 @@ import { User, UserSchema } from '../entities/user.entity';
 @Module({
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [AuthService],
   imports: [
     ConfigModule.forRoot(),
     MongooseModule.forFeature([

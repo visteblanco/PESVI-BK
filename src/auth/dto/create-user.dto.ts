@@ -1,4 +1,4 @@
-import { IsEmail, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
 
 
 
@@ -16,6 +16,10 @@ export class CreateUserDto {
     @IsString()
     roles: string;
     
+    @IsString()
+    @IsOptional() 
+    company: string;
+
     setEmail(email: string) {
         this.email = email.toUpperCase();
     }
