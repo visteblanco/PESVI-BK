@@ -11,8 +11,10 @@ export class CreateUserDto {
   @MinLength(6)
   password: string;
 
-  @IsString() 
-  roles: string;
+  @IsArray()
+  @ArrayNotEmpty({ message: "roles must not be empty" })
+  @IsString({ each: true }) 
+  roles: string[];
 
   @Transform(({ value }) => value === 'true' || value === true) 
   @IsBoolean()
@@ -20,5 +22,5 @@ export class CreateUserDto {
 
   @IsString()
   @IsOptional() 
-  company: string;
+  company?: string;
 }
