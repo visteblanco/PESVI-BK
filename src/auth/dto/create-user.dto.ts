@@ -1,26 +1,24 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator';
-
-
+import { Transform } from 'class-transformer';
+import { IsArray, IsBoolean, IsEmail, IsOptional, IsString, MinLength, ArrayNotEmpty } from 'class-validator';
 
 export class CreateUserDto {
+  @IsEmail()
+  email: string;
 
-    @IsEmail()
-    email: string;
+  @IsString()
+  name: string;
 
-    @IsString()
-    name: string;
+  @MinLength(6)
+  password: string;
 
-    @MinLength(6)
-    password: string;
-    
-    @IsString()
-    roles: string;
-    
-    @IsString()
-    @IsOptional() 
-    company: string;
+  @IsString() 
+  roles: string;
 
-    setEmail(email: string) {
-        this.email = email.toUpperCase();
-    }
+  @Transform(({ value }) => value === 'true' || value === true) 
+  @IsBoolean()
+  status: boolean;
+
+  @IsString()
+  @IsOptional() 
+  company: string;
 }

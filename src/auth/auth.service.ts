@@ -11,6 +11,7 @@ import { User } from '../entities/user.entity';
 
 import { JwtPayload } from './interfaces/jwt-payload';
 import { LoginResponse } from './interfaces/login-response';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class AuthService {
@@ -80,6 +81,36 @@ export class AuthService {
     return this.userModel.find();
   }
 
+  async updateUser(updateUserDto: UpdateUserDto): Promise<User> {
+    const { id, password, email, roles, ...updateData } = updateUserDto;
+  
+    if (password) {
+      (updateData as any).password = bcryptjs.hashSync(password, 10);
+    }
+    if (email) {
+      (updateData as any).email = email.toUpperCase();
+    }
+    if (roles) {
+      (updateData as any).roles = Array.isArray(roles) ? roles : [roles]; // 🔹 Solución aquí
+    }
+  
+    const updatedUser = await this.userModel.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+  
+    if (!updatedUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+  
+    const { password: _, ...userWithoutPassword } = updatedUser.toJSON();
+    return userWithoutPassword;
+  }
+
+  async findUserByCompanyId( id: string ) {
+    const users  = await this.userModel.find( {company: id } );
+    return users.map(user => user.toJSON());
+  }
+
   async findUserById( id: string,pas:boolean ) {
     const user = await this.userModel.findById( id );
     const { password, ...rest } = user.toJSON();
@@ -93,20 +124,6 @@ export class AuthService {
     return `This action returns a #${id} auth`;
   }
 
-  async updateUser( updateUserDto: UpdateAuthDto): Promise<User> {
-    // Aquí puedes implementar la lógica para actualizar el usuario en tu base de datos
-    // Por ejemplo, podrías usar el método findOneAndUpdate() si estás utilizando MongoDB
-    // O el método updateOne() si estás utilizando Mongoose
-    const updatedUser = await this.updateUserID(updateUserDto);
-  
-    if (!updatedUser) {
-      // Manejar el caso en el que no se encuentre ningún usuario con el ID proporcionado
-      throw new NotFoundException('Usuario no encontrado');
-    }
-  
-    return updatedUser;
-  }
-  
   async updateUserID(updateAuthDto: UpdateAuthDto): Promise<User> {
     try {
       const us = await this.findUserById( updateAuthDto._id,true );
@@ -137,10 +154,16 @@ export class AuthService {
     }
   }
 
+  async deleteUser(id: string): Promise<{ message: string }> {
+    const deletedUser = await this.userModel.findByIdAndDelete(id);
 
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+    if (!deletedUser) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+
+    return { message: 'User deleted successfully' };
   }
+
 
   getJwtToken( payload: JwtPayload ) {
     const token = this.jwtService.sign(payload);

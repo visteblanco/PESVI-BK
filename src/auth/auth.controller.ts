@@ -1,10 +1,11 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Request, Put } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
 import { CreateUserDto, LoginDto, UpdateAuthDto } from './dto';
 import { AuthGuard } from './guards/auth.guard';
 import { LoginResponse } from './interfaces/login-response';
 import { User } from '../entities/user.entity';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 
 @Controller('auth')
@@ -15,7 +16,7 @@ export class AuthController {
   create(@Body() createUserDto: CreateUserDto) {
     return this.authService.create(createUserDto);
   }
-
+//#region login
   @Post('/login')
   login( @Body() loginDto: LoginDto  ) {
     return this.authService.login( loginDto );
@@ -26,22 +27,6 @@ export class AuthController {
     return this.authService.register( registerDto );
   }
 
-  @Post('/update')
-  updateUser( @Body() updateDto: UpdateAuthDto  ) {
-    return this.authService.updateUser( updateDto );
-  }
-
-  @UseGuards( AuthGuard )
-  @Get()
-  findAll( @Request() req: Request ) {
-    // const user = req['user'];
-    
-    // return user;
-    return this.authService.findAll();
-  }
-
-
-  // LoginResponse
   @UseGuards( AuthGuard )
   @Get('check-token')
   checkToken( @Request() req: Request ): LoginResponse {
@@ -52,21 +37,27 @@ export class AuthController {
       user,
       token: this.authService.getJwtToken({ id: user._id })
     }
-
+  }
+  //#endregion login
+//#region users
+  @Get('/users')
+  findAll(  req: User ) {
+    return this.authService.findAll();
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.authService.findOne(+id);
-  // }
+  @Get('/users/:id')
+  async findUserByCompanyId(@Param('id')  id: string ) {
+    return this.authService.findUserByCompanyId(id);
+  }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-  //   return this.authService.update(+id, updateAuthDto);
-  // }
+  @Put('/update/:id')
+  updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
+    return this.authService.updateUser({ ...updateUserDto, id: id });
+  }
+  @Delete('/delete/:id')
+    async deleteUser(@Param('id') id: string): Promise<{ message: string }> {
+    return this.authService.deleteUser(id);
+  }
 
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.authService.remove(+id);
-  // }
+//#endregion users
 }
