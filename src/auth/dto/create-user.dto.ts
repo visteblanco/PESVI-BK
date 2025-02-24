@@ -13,14 +13,13 @@ export class CreateUserDto {
 
   @IsArray()
   @ArrayNotEmpty({ message: "roles must not be empty" })
-  @IsString({ each: true }) 
   roles: string[];
 
   @Transform(({ value }) => value === 'true' || value === true) 
   @IsBoolean()
   status: boolean;
 
-  @IsString()
-  @IsOptional() 
+  @IsOptional()
+  @Transform(({ value }) => value === '' ? undefined : value) 
   company?: string;
 }
