@@ -1,19 +1,28 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import mongoose from 'mongoose';
-import { MaintenanceRecord } from './maintenanceRecord.entity';
+import { Document } from 'mongoose';
 
 @Schema()
-export class Vehicle  {
+export class Vehicle extends Document {
 
-  @Prop({ unique: true, required: true })
-  plateNumber: string;
+  _id: string;
+
+  @Prop({ required: true, unique: true })
+  plate: string;
 
   @Prop({ required: true })
-  model: string;
+  vehicleModel: string;
 
   @Prop()
   brand: string;
 
+  @Prop()
+  year: number;
+
+  @Prop()
+  color: string;
+
+  @Prop({ type: String, required: true })
+  idCompany: string;
 }
 
 export const VehicleSchema = SchemaFactory.createForClass(Vehicle);

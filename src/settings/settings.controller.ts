@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body,  Param,  UseInterceptors, UploadedFile, NotFoundException, Res, Header } from '@nestjs/common';
+import { Controller, Get, Post, Body,  Param,  UseInterceptors, UploadedFile, NotFoundException, Res, Put, Delete } from '@nestjs/common';
 import { SettingsService } from './settings.service';
 import { CreateVehicleDto } from 'src/dto/create-vehicle.dto';
 import { CreateMrDto } from 'src/dto/create-mr.dto';
@@ -6,8 +6,6 @@ import { CreatePackageDto } from 'src/dto/create-package';
 import { CreateCompanyDto } from 'src/dto/create-company.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Response } from 'express';
-import { diskStorage } from 'multer';
-import * as path from 'path';
 import * as fs from 'fs';
 import * as mime from 'mime-types';
 import { UpdateCompanyDto } from 'src/dto/update-comany.dto';
@@ -15,19 +13,7 @@ import { UpdateCompanyDto } from 'src/dto/update-comany.dto';
 @Controller('settings')
 export class SettingsController {
   constructor(private readonly settingsService: SettingsService) {}
-  // @UseInterceptors(
-  //   FileInterceptor(
-  //     'logo',
-  //     {
-  //       storage : diskStorage({
-  //           destination : './uploads',
-  //           filename : (req, file, cb) => {
-  //             cb(null, file.originalname.split('.')[0] + '_' + Date.now() + '.pdf');
-  //           }
-  //       })
-  //     }
-  //   )
-  // )
+
   //#region comapny
   @Post('registercompany')
   @UseInterceptors(FileInterceptor('logo'))
@@ -70,16 +56,34 @@ export class SettingsController {
   
   //#region Vehicle
 
-  @Post()
-  create(@Body() createVehicleDto: CreateVehicleDto) {
-    return this.settingsService.createVehicle(createVehicleDto);
-  }
-
   @Post('registervehicle')
   registervehicle(@Body() createVehicleDto: CreateVehicleDto) {
     return this.settingsService.createVehicle(createVehicleDto);
   }
   
+  @Get('getvehicle/:idCompany')
+  async getVehiclesByCompanyId(@Param('idCompany') idCompany: string) {
+    return this.settingsService.getVehiclesByCompanyId(idCompany);
+  }
+
+  @Put('updatevehicle/:id')
+  async replaceVehicle(
+    @Param('id') id: string,
+    @Body() updateVehicleDto: CreateVehicleDto 
+  ) {
+    return this.settingsService.updateVehicle(id, updateVehicleDto);
+  }
+
+  @Delete('deletevehicle/:id')
+  async deteleVehicle( @Param('id') id:string): Promise<{ message: string }>{
+    return this.settingsService.deteleVehicle(id)
+  }
+
+  // @Get('getvehicleplates/:userId')
+  // async getVehiclePlates(@Param('userId') userId: string) {
+  //   return this.settingsService.getVehiclePlates(userId);
+  // }
+
   //#endregion
 
   //#region MR

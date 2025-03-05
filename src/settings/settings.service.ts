@@ -18,6 +18,7 @@ import * as path from 'path';
 import { AuthService } from '../auth/auth.service';
 import { UpdateAuthDto } from 'src/auth/dto';
 import { UpdateCompanyDto } from 'src/dto/update-comany.dto';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class SettingsService {
@@ -25,7 +26,7 @@ export class SettingsService {
   
   constructor(
     @InjectModel( Vehicle.name ) 
-    private userModelV: Model<Vehicle>,
+    private vehicleModel: Model<Vehicle>,
     @InjectModel( MaintenanceRecord.name ) 
     private userModelMr: Model<MaintenanceRecord>,
     @InjectModel( Package.name ) 
@@ -147,18 +148,65 @@ export class SettingsService {
   //#endregion 
   
   //#region Vehicle
-  async createVehicle(createVehicleDto: CreateVehicleDto) : Promise<Vehicle> {
+  async createVehicle(createVehicleDto: CreateVehicleDto): Promise<Vehicle> {
     try {
-      const newVehicle = new this.userModelV(createVehicleDto);
-      if (newVehicle.plateNumber) newVehicle.plateNumber = newVehicle.plateNumber.toUpperCase();
-      await newVehicle.save();
-      return newVehicle;
+        createVehicleDto.plate = createVehicleDto.plate.toUpperCase(); 
+
+        const existingVehicle = await this.vehicleModel.findOne({ plate: createVehicleDto.plate });
+        if (existingVehicle) {
+            throw new BadRequestException(`Plate ${createVehicleDto.plate} already exists!`);
+        }
+
+        const newVehicle = new this.vehicleModel(createVehicleDto);
+        await newVehicle.save();
+        return newVehicle;
     } catch (error) {
-      if( error.code === 11000 ) {
-        throw new BadRequestException(`${ createVehicleDto.plateNumber } already exists!`)
-      }
-      throw new InternalServerErrorException('Something terribe happen!!!');
+        if (error.status  === 400) {
+            throw new BadRequestException(`Plate ${createVehicleDto.plate} already exists!`);
+        }
+        throw new InternalServerErrorException('An unexpected error occurred while creating the vehicle.');
     }
+  }
+
+  async getVehiclesByCompanyId(idCompany: string): Promise<Vehicle[]> {
+    try {
+      const vehicles = await this.vehicleModel.find({ idCompany }).lean();
+      if (!vehicles || vehicles.length === 0) {
+        throw new NotFoundException(`No vehicles found for company ID: ${idCompany}`);
+      }
+      return vehicles;
+    } catch (error) {
+      throw new InternalServerErrorException('An error occurred while fetching the vehicles.');
+    }
+  }
+  
+  async updateVehicle(id: string, updateVehicleDto: CreateVehicleDto): Promise<Vehicle> {
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new BadRequestException(`Invalid ID format: ${id}`);
+      }
+      const objectId = new Types.ObjectId(id);   
+      const replacedVehicle = await this.vehicleModel.findOneAndReplace(
+        { _id: objectId }, 
+        updateVehicleDto, 
+        { new: true }
+      );
+      if (!replacedVehicle) {
+        throw new NotFoundException(`Vehicle with ID ${id} not found.`);
+      }
+      return replacedVehicle;
+    } catch (error) {
+      console.error("Error al actualizar vehículo:", error);
+      throw new InternalServerErrorException('An error occurred while replacing the vehicle.');
+    }
+  }
+  
+  async deteleVehicle(id:string):Promise<{ message: string }>{    
+    const deletedUser = await this.vehicleModel.findByIdAndDelete(id);
+    if (!deletedUser) {
+      throw new NotFoundException(`Vehicle with ID ${id} not found`);
+    }
+    return { message: 'Vehicle deleted successfully'};
   }
   //#endregion
 
